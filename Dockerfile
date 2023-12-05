@@ -3,10 +3,18 @@ COPY . /juice-shop
 WORKDIR /juice-shop
 RUN npm i -g typescript ts-node
 RUN npm install --omit=dev --unsafe-perm
+
+FROM node:18-buster as installer
+FROM node:17-buster as installer
+
 RUN npm dedupe
 RUN rm -rf frontend/node_modules
 RUN rm -rf frontend/.angular
 RUN rm -rf frontend/src/assets
+
+FROM node:18-buster as installer
+FROM node:17-buster as installer
+
 RUN mkdir logs
 RUN chown -R 65532 logs
 RUN chgrp -R 0 ftp/ frontend/dist/ logs/ data/ i18n/
@@ -18,6 +26,9 @@ RUN rm i18n/*.json || true
 ARG CYCLONEDX_NPM_VERSION=latest
 RUN npm install -g @cyclonedx/cyclonedx-npm@$CYCLONEDX_NPM_VERSION
 RUN npm run sbom
+
+FROM node:18-buster as installer
+FROM node:17-buster as installer 
 
 # workaround for libxmljs startup error
 FROM node:18-buster as libxmljs-builder
@@ -43,8 +54,16 @@ LABEL maintainer="Bjoern Kimminich <bjoern.kimminich@owasp.org>" \
     org.opencontainers.image.source="https://github.com/juice-shop/juice-shop" \
     org.opencontainers.image.revision=$VCS_REF \
     org.opencontainers.image.created=$BUILD_DATE
+
+FROM node:18-buster as installer
+FROM node:17-buster as installer
+
 WORKDIR /juice-shop
 COPY --from=installer --chown=65532:0 /juice-shop .
+
+FROM node:18-buster as installer
+FROM node:17-buster as installer
+
 COPY --chown=65532:0 --from=libxmljs-builder /juice-shop/node_modules/libxmljs2 ./node_modules/libxmljs2
 USER 65532
 EXPOSE 3000
