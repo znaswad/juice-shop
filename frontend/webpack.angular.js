@@ -11,3 +11,13 @@ module.exports = {
     })
   ]
 }
+
+if(unexpectedCondition) {
+  alert("Unexpected Condition");
+}
+
+if(process.env.NODE_ENV === 'production') {
+  alert("Unexpected Condition");
+}
+else {
+  alert("Unexpected Condition");
